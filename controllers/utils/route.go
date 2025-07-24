@@ -1,41 +1,45 @@
-package gorch
+package utils
 
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"time"
-
 	routev1 "github.com/openshift/api/route/v1"
-	gorchv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/gorch/v1alpha1"
-	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/gorch/templates"
+	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/tas/templates"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
+	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"time"
 )
 
 type RouteConfig struct {
-	Orchestrator *gorchv1alpha1.GuardrailsOrchestrator
+	Owner metav1.Object
 }
 
-func (r *GuardrailsOrchestratorReconciler) createRoute(ctx context.Context, routeTemplatePath string, orchestrator *gorchv1alpha1.GuardrailsOrchestrator) *routev1.Route {
+func createRoute(ctx context.Context, c client.Client, owner metav1.Object, routeTemplatePath string) *routev1.Route {
 	routeHttpsConfig := RouteConfig{
-		Orchestrator: orchestrator,
+		Owner: owner,
 	}
 	var route *routev1.Route
 	route, err := templateParser.ParseResource[routev1.Route](routeTemplatePath, routeHttpsConfig, reflect.TypeOf(&routev1.Route{}))
 
 	if err != nil {
-		log.FromContext(ctx).Error(err, "Failed to parse route template")
+		log.FromContext(ctx).Error(err, "failed to parse route template")
 	}
-	controllerutil.SetControllerReference(orchestrator, route, r.Scheme)
+	err = controllerutil.SetControllerReference(owner, route, c.Scheme())
+	if err != nil {
+		log.FromContext(ctx).Error(err, "failed to set controller reference")
+		return nil
+	}
 	return route
 }
 
-func (r *GuardrailsOrchestratorReconciler) checkRouteReady(ctx context.Context, orchestrator *gorchv1alpha1.GuardrailsOrchestrator, portName string) (bool, error) {
+func CheckRouteReady(ctx context.Context, c client.Client, name string, namespace string, portName string) (bool, error) {
 	// Retry logic for getting the route and checking its readiness
 	var existingRoute *routev1.Route
 	err := retry.OnError(
@@ -48,9 +52,9 @@ func (r *GuardrailsOrchestratorReconciler) checkRouteReady(ctx context.Context, 
 		},
 		func() error {
 			// Fetch the Route resource
-			typedNamespaceName := types.NamespacedName{Name: orchestrator.Name + portName, Namespace: orchestrator.Namespace}
+			typedNamespaceName := types.NamespacedName{Name: name + portName, Namespace: namespace}
 			existingRoute = &routev1.Route{}
-			err := r.Get(ctx, typedNamespaceName, existingRoute)
+			err := c.Get(ctx, typedNamespaceName, existingRoute)
 			if err != nil {
 				return err
 			}
@@ -63,7 +67,7 @@ func (r *GuardrailsOrchestratorReconciler) checkRouteReady(ctx context.Context, 
 				}
 			}
 			// Route is not admitted yet, return an error to retry
-			return fmt.Errorf("route %s is not admitted", orchestrator.Name)
+			return fmt.Errorf("route %s is not admitted", name)
 		},
 	)
 	if err != nil {

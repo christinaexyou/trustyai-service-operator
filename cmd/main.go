@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	trustyaiv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/nemo/v1alpha1"
+	"github.com/trustyai-explainability/trustyai-service-operator/controllers/nemo"
 	"os"
 
 	kservev1alpha1 "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
@@ -39,6 +41,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	kueuev1beta1 "sigs.k8s.io/kueue/apis/kueue/v1beta1"
+
 	gorchv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/gorch/v1alpha1"
 	lmesv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/lmes/v1alpha1"
 	tasv1 "github.com/trustyai-explainability/trustyai-service-operator/api/tas/v1"
@@ -46,7 +50,6 @@ import (
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers"
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers/constants"
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers/utils"
-	kueuev1beta1 "sigs.k8s.io/kueue/apis/kueue/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -67,6 +70,7 @@ func init() {
 	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 	utilruntime.Must(kueuev1beta1.AddToScheme(scheme))
 	utilruntime.Must(gorchv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(trustyaiv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -128,6 +132,13 @@ func main() {
 
 	if err = controllers.SetupControllers(enabledServices, mgr, ns, configMap, recorder); err != nil {
 		setupLog.Error(err, "unable to initialize controller(s)")
+		os.Exit(1)
+	}
+	if err = (&nemo.NemoGuardrailReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "NemoGuardrails")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
