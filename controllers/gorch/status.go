@@ -35,9 +35,9 @@ func (r *GuardrailsOrchestratorReconciler) updateStatus(ctx context.Context, ori
 
 func (r *GuardrailsOrchestratorReconciler) reconcileStatuses(ctx context.Context, orchestrator *gorchv1alpha1.GuardrailsOrchestrator) (ctrl.Result, error) {
 	generatorReady, _ = r.checkGeneratorPresent(ctx, orchestrator.Namespace)
-	deploymentReady, _ = utils.CheckDeploymentReady(ctx, r, orchestrator.Name, orchestrator.Namespace)
-	httpRouteReady, _ := utils.CheckRouteReady(ctx, r, orchestrator.Name, orchestrator.Namespace, "-http")
-	healthRouteReady, _ := utils.CheckRouteReady(ctx, r, orchestrator.Name, orchestrator.Namespace, "-health")
+	deploymentReady, _ = utils.CheckDeploymentReady(ctx, r.Client, orchestrator.Name, orchestrator.Namespace)
+	httpRouteReady, _ := utils.CheckRouteReady(ctx, r.Client, orchestrator.Name, orchestrator.Namespace, "-http")
+	healthRouteReady, _ := utils.CheckRouteReady(ctx, r.Client, orchestrator.Name, orchestrator.Namespace, "-health")
 	routeReady = httpRouteReady && healthRouteReady
 
 	if generatorReady && deploymentReady && routeReady {

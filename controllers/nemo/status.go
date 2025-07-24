@@ -27,9 +27,9 @@ func (r *NemoGuardrailsReconciler) updateStatus(ctx context.Context, original *n
 }
 
 func (r *NemoGuardrailsReconciler) reconcileStatuses(ctx context.Context, nemoGuardrails *nemov1alpha1.NemoGuardrails) (ctrl.Result, error) {
-	deploymentReady, _ := utils.CheckDeploymentReady(ctx, r, nemoGuardrails.Name, nemoGuardrails.Namespace)
-	httpRouteReady, _ := utils.CheckRouteReady(ctx, r, nemoGuardrails.Name, nemoGuardrails.Namespace, "-http")
-	healthRouteReady, _ := utils.CheckRouteReady(ctx, r, nemoGuardrails.Name, nemoGuardrails.Namespace, "-health")
+	deploymentReady, _ := utils.CheckDeploymentReady(ctx, r.Client, nemoGuardrails.Name, nemoGuardrails.Namespace)
+	httpRouteReady, _ := utils.CheckRouteReady(ctx, r.Client, nemoGuardrails.Name, nemoGuardrails.Namespace, "-http")
+	healthRouteReady, _ := utils.CheckRouteReady(ctx, r.Client, nemoGuardrails.Name, nemoGuardrails.Namespace, "-health")
 	routeReady := httpRouteReady && healthRouteReady
 
 	if deploymentReady && routeReady {

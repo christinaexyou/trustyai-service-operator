@@ -179,19 +179,19 @@ func (r *GuardrailsOrchestratorReconciler) Reconcile(ctx context.Context, req ct
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileService(ctx, r, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "service.tmpl.yaml"), log)
+	_, err = utils.ReconcileService(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "service.tmpl.yaml"), log)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "https-route.tmpl.yaml"), log)
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "https-route.tmpl.yaml"), log)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "health-route.tmpl.yaml"), log)
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "health-route.tmpl.yaml"), log)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err

@@ -134,7 +134,7 @@ func main() {
 		setupLog.Error(err, "unable to initialize controller(s)")
 		os.Exit(1)
 	}
-	if err = (&nemo.NemoGuardrailReconciler{
+	if err = (&nemo.NemoGuardrailsReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

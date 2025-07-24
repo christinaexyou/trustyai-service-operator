@@ -75,13 +75,13 @@ func (r *NemoGuardrailsReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileService(ctx, r, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "service.tmpl.yaml"), logger)
+	_, err = utils.ReconcileService(ctx, r.Client, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "service.tmpl.yaml"), logger)
 	if err != nil {
 		logger.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "route.tmpl.yaml"), logger)
+	_, err = utils.ReconcileRoute(ctx, r.Client, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "route.tmpl.yaml"), logger)
 	if err != nil {
 		logger.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err

@@ -26,7 +26,7 @@ type DeploymentConfig struct {
 func (r *NemoGuardrailsReconciler) createDeployment(ctx context.Context, nemoGuardrails *nemov1alpha1.NemoGuardrails) *appsv1.Deployment {
 	var containerImages ContainerImages
 
-	nemoGuardrailsImage, err := utils.GetImageFromConfigMap(ctx, r, nemoImageKey, constants.ConfigMap, r.Namespace)
+	nemoGuardrailsImage, err := utils.GetImageFromConfigMap(ctx, r.Client, nemoImageKey, constants.ConfigMap, r.Namespace)
 	if nemoGuardrailsImage == "" || err != nil {
 		log.FromContext(ctx).Error(err, "Error getting container image from ConfigMap.")
 	}

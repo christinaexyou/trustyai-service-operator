@@ -19,3 +19,9 @@ type Condition struct {
 	// +optional
 	LastTransitionTime metav1.Time `json:"lastTransitionTime" description:"last time the condition transit from one status to another"`
 }
+
+// DeepCopyInto copies all properties of this object into another object of the same type.
+func (in *Condition) DeepCopyInto(out *Condition) {
+	*out = *in
+	in.LastTransitionTime.DeepCopyInto(&out.LastTransitionTime)
+}
