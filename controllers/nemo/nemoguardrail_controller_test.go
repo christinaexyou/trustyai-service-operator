@@ -67,7 +67,7 @@ var _ = Describe("NemoGuardrails Controller", func() {
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &NemoGuardrailReconciler{
+			controllerReconciler := &NemoGuardrailsReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}
