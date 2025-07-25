@@ -17,9 +17,9 @@ func GetImageFromConfigMap(ctx context.Context, c client.Client, configMapKey, c
 	err := c.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: namespace}, configMap)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return "", fmt.Errorf("could not find configmap %s on namespace %s", configMapName, namespace)
+			return "", fmt.Errorf("could not find configmap %s in namespace %s", configMapName, namespace)
 		}
-		return "", fmt.Errorf("error reading configmap %s on namespace %s: %w", configMapName, namespace, err)
+		return "", fmt.Errorf("error reading configmap %s in namespace %s: %w", configMapName, namespace, err)
 	}
 
 	value, ok := configMap.Data[configMapKey]

@@ -8,12 +8,9 @@ import (
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"reflect"
-
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-const deploymentTemplatePath = "deployment.tmpl.yaml"
 
 type ContainerImages struct {
 	OrchestratorImage      string
@@ -25,6 +22,8 @@ type DeploymentConfig struct {
 	Orchestrator    *gorchv1alpha1.GuardrailsOrchestrator
 	ContainerImages ContainerImages
 }
+
+const deploymentTemplate = "gorch/templates/deployment.tmpl.yaml"
 
 func (r *GuardrailsOrchestratorReconciler) createDeployment(ctx context.Context, orchestrator *gorchv1alpha1.GuardrailsOrchestrator) *appsv1.Deployment {
 	var containerImages ContainerImages
@@ -63,7 +62,7 @@ func (r *GuardrailsOrchestratorReconciler) createDeployment(ctx context.Context,
 
 	var deployment *appsv1.Deployment
 
-	deployment, err = templateParser.ParseResource[appsv1.Deployment](deploymentTemplatePath, deploymentConfig, reflect.TypeOf(&appsv1.Deployment{}))
+	deployment, err = templateParser.ParseResource[appsv1.Deployment](deploymentTemplate, deploymentConfig, reflect.TypeOf(&appsv1.Deployment{}))
 	if err != nil {
 		log.FromContext(ctx).Error(err, "Failed to parse deployment template")
 	}

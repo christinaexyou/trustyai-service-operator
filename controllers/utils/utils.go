@@ -2,10 +2,8 @@ package utils
 
 import (
 	lmesv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/lmes/v1alpha1"
-	"os"
-	"path/filepath"
-
 	appsv1 "k8s.io/api/apps/v1"
+	"os"
 )
 
 func IsDeploymentReady(deployment *appsv1.Deployment) bool {
@@ -83,9 +81,4 @@ func ProgressArrayTriggeredChange(a, b []lmesv1alpha1.ProgressBar) bool {
 		}
 	}
 	return true
-}
-
-func GetAbsolutePath(directory string, file string) string {
-	wd, _ := os.Getwd()
-	return filepath.Join(wd, directory, file)
 }

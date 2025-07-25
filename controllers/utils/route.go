@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	routev1 "github.com/openshift/api/route/v1"
-	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/tas/templates"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
 	"reflect"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -21,22 +21,23 @@ type RouteConfig struct {
 	Owner metav1.Object
 }
 
-func createRoute(ctx context.Context, c client.Client, owner metav1.Object, routeTemplatePath string) *routev1.Route {
+func createRoute(ctx context.Context, c client.Client, owner metav1.Object, routeTemplatePath string, parser ResourceParserFunc[routev1.Route]) (*routev1.Route, error) {
 	routeHttpsConfig := RouteConfig{
 		Owner: owner,
 	}
 	var route *routev1.Route
-	route, err := templateParser.ParseResource[routev1.Route](routeTemplatePath, routeHttpsConfig, reflect.TypeOf(&routev1.Route{}))
+	route, err := parser(routeTemplatePath, routeHttpsConfig, reflect.TypeOf(&routev1.Route{}))
 
 	if err != nil {
 		log.FromContext(ctx).Error(err, "failed to parse route template")
+		return nil, err
 	}
 	err = controllerutil.SetControllerReference(owner, route, c.Scheme())
 	if err != nil {
 		log.FromContext(ctx).Error(err, "failed to set controller reference")
-		return nil
+		return nil, err
 	}
-	return route
+	return route, nil
 }
 
 func CheckRouteReady(ctx context.Context, c client.Client, name string, namespace string, portName string) (bool, error) {
@@ -74,4 +75,27 @@ func CheckRouteReady(ctx context.Context, c client.Client, name string, namespac
 		return false, err
 	}
 	return true, nil
+}
+
+func ReconcileRoute(ctx context.Context, c client.Client, owner metav1.Object, templatePath string, parserFunc ResourceParserFunc[routev1.Route]) (ctrl.Result, error) {
+	existingRoute := &routev1.Route{}
+	err := c.Get(ctx, types.NamespacedName{Name: owner.GetName(), Namespace: owner.GetNamespace()}, existingRoute)
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new route
+		route, err := createRoute(ctx, c, owner, templatePath, parserFunc)
+		if err != nil {
+			log.FromContext(ctx).Error(err, "Failed to define route", "route", owner.GetName(), "namespace", owner.GetNamespace())
+			return ctrl.Result{}, err
+		}
+
+		log.FromContext(ctx).Info("Creating a new Route", "Route.Namespace", route.Namespace, "Route.Name", route.Name)
+		err = c.Create(ctx, route)
+		if err != nil {
+			log.FromContext(ctx).Error(err, "Failed to create new Route", "Route.Namespace", route.Namespace, "Route.Name", route.Name)
+		}
+	} else if err != nil {
+		log.FromContext(ctx).Error(err, "Failed to get Route")
+		return ctrl.Result{}, err
+	}
+	return ctrl.Result{}, nil
 }

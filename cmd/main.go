@@ -20,7 +20,6 @@ import (
 	"flag"
 	"fmt"
 	trustyaiv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/nemo/v1alpha1"
-	"github.com/trustyai-explainability/trustyai-service-operator/controllers/nemo"
 	"os"
 
 	kservev1alpha1 "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
@@ -134,13 +133,7 @@ func main() {
 		setupLog.Error(err, "unable to initialize controller(s)")
 		os.Exit(1)
 	}
-	if err = (&nemo.NemoGuardrailsReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "NemoGuardrails")
-		os.Exit(1)
-	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

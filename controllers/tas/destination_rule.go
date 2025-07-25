@@ -3,10 +3,10 @@ package tas
 import (
 	"context"
 	"fmt"
+	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/tas/templates"
 	"reflect"
 
 	trustyaiopendatahubiov1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/tas/v1alpha1"
-	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/tas/templates"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	destinationRuleTemplatePath = "service/destination-rule.tmpl.yaml"
+	destinationRuleTemplatePath = "tas/templates/service/destination-rule.tmpl.yaml"
 	destinationRuleCDRName      = "destinationrules.networking.istio.io"
 )
 

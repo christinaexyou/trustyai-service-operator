@@ -19,6 +19,7 @@ package nemo
 import (
 	"context"
 	nemov1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/nemo/v1alpha1"
+	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/nemo/templates"
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -41,6 +42,11 @@ type NemoGuardrailsReconciler struct {
 	Recorder  record.EventRecorder
 }
 
+const (
+	serviceTemplate = "service.tmpl.yaml"
+	routeTemplate   = "route.tmpl.yaml"
+)
+
 //+kubebuilder:rbac:groups=trustyai.opendatahub.io,resources=nemoguardrails,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=trustyai.opendatahub.io,resources=nemoguardrails/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=trustyai.opendatahub.io,resources=nemoguardrails/finalizers,verbs=update
@@ -57,13 +63,26 @@ type NemoGuardrailsReconciler struct {
 func (r *NemoGuardrailsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
+	// fetch instance of NemoGuardrails CR
 	nemoGuardrails := &nemov1alpha1.NemoGuardrails{}
+	err := r.Get(context.TODO(), req.NamespacedName, nemoGuardrails)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("NemoGuardrails resource not found. Ignoring since object must be deleted.")
+			return ctrl.Result{}, nil
+		}
+		logger.Error(err, "Failed to get NemoGuardrails.")
+		return ctrl.Result{}, err
+	}
 
 	existingDeployment := &appsv1.Deployment{}
-	err := r.Get(ctx, types.NamespacedName{Name: nemoGuardrails.Name, Namespace: nemoGuardrails.Namespace}, existingDeployment)
+	err = r.Get(ctx, types.NamespacedName{Name: nemoGuardrails.Name, Namespace: nemoGuardrails.Namespace}, existingDeployment)
 	if err != nil && errors.IsNotFound(err) {
 		// Create a new deployment
-		deployment := r.createDeployment(ctx, nemoGuardrails)
+		deployment, err := r.createDeployment(ctx, nemoGuardrails)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 		logger.Info("Creating a new Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
 		err = r.Create(ctx, deployment)
 		if err != nil {
@@ -75,13 +94,13 @@ func (r *NemoGuardrailsReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileService(ctx, r.Client, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "service.tmpl.yaml"), logger)
+	_, err = utils.ReconcileService(ctx, r.Client, nemoGuardrails, serviceTemplate, templateParser.ParseResource)
 	if err != nil {
 		logger.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, nemoGuardrails, utils.GetAbsolutePath("controllers/nemo/templates/", "route.tmpl.yaml"), logger)
+	_, err = utils.ReconcileRoute(ctx, r.Client, nemoGuardrails, routeTemplate, templateParser.ParseResource)
 	if err != nil {
 		logger.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
@@ -102,7 +121,7 @@ func (r *NemoGuardrailsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// The registered function to set up GORCH controller
+// The registered function to set up NEMO-GUARDRAILS controller
 func ControllerSetUp(mgr manager.Manager, ns, configmap string, recorder record.EventRecorder) error {
 	return (&NemoGuardrailsReconciler{
 		Client:    mgr.GetClient(),

@@ -6,14 +6,16 @@ metadata:
   labels:
     app: {{.Owner.Name}}
     component: {{.Owner.Name}}
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: {{.Owner.Name}}-tls
 spec:
   ipFamilies:
     - IPv4
   ports:
-    - name: http
+    - name: oauth-proxy
       protocol: TCP
-      port: 8000
-      targetPort: 8000
+      port: 443
+      targetPort: 8443
   internalTrafficPolicy: Cluster
   type: ClusterIP
   ipFamilyPolicy: SingleStack

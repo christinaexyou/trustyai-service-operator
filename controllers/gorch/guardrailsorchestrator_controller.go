@@ -18,6 +18,7 @@ package gorch
 
 import (
 	"context"
+	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/gorch/templates"
 	"github.com/trustyai-explainability/trustyai-service-operator/controllers/utils"
 	"time"
 
@@ -34,6 +35,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
+
+const serviceTemplate = "gorch/templates/service.tmpl.yaml"
+const healthRouteTemplate = "gorch/templates/health-route.tmpl.yaml"
+const httpsRouteTemplate = "gorch/templates/https-route.tmpl.yaml"
 
 // GuardrailsOrchestratorReconciler reconciles a GuardrailsOrchestrator object
 type GuardrailsOrchestratorReconciler struct {
@@ -179,19 +184,19 @@ func (r *GuardrailsOrchestratorReconciler) Reconcile(ctx context.Context, req ct
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileService(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "service.tmpl.yaml"), log)
+	_, err = utils.ReconcileService(ctx, r.Client, orchestrator, serviceTemplate, templateParser.ParseResource)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "https-route.tmpl.yaml"), log)
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, httpsRouteTemplate, templateParser.ParseResource)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, utils.GetAbsolutePath("controllers/gorch/templates/", "health-route.tmpl.yaml"), log)
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, healthRouteTemplate, templateParser.ParseResource)
 	if err != nil {
 		log.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err
