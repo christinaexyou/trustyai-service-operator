@@ -1,7 +1,7 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: {{.Owner.Name}}
+  name: {{.RouteName}}
   namespace: {{.Owner.Namespace}}
   labels:
     app: {{.Owner.Name}}
@@ -12,7 +12,7 @@ spec:
     name:  {{.Owner.Name}}-service
     weight: 100
   port:
-    targetPort: http
+    targetPort: {{.RoutePort}}
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect

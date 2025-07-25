@@ -23,7 +23,7 @@ type DeploymentConfig struct {
 	ContainerImages ContainerImages
 }
 
-const deploymentTemplate = "gorch/templates/deployment.tmpl.yaml"
+const deploymentTemplate = "deployment.tmpl.yaml"
 
 func (r *GuardrailsOrchestratorReconciler) createDeployment(ctx context.Context, orchestrator *gorchv1alpha1.GuardrailsOrchestrator) *appsv1.Deployment {
 	var containerImages ContainerImages

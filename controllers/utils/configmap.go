@@ -17,14 +17,14 @@ func GetImageFromConfigMap(ctx context.Context, c client.Client, configMapKey, c
 	err := c.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: namespace}, configMap)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return "", fmt.Errorf("could not find configmap %s in namespace %s", configMapName, namespace)
+			return "", err
 		}
 		return "", fmt.Errorf("error reading configmap %s in namespace %s: %w", configMapName, namespace, err)
 	}
 
 	value, ok := configMap.Data[configMapKey]
 	if !ok {
-		return "", fmt.Errorf("configmap %s on namespace %s does not contain key %s", configMapName, namespace, configMapKey)
+		return "", fmt.Errorf("configmap %s in namespace %s does not contain key %s", configMapName, namespace, configMapKey)
 	}
 	return value, nil
 }

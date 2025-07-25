@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-const serviceAccountTemplatePath = "gorch/templates/serviceaccount.tmpl.yaml"
+const serviceAccountTemplatePath = "serviceaccount.tmpl.yaml"
 
 type ServiceAccountConfig struct {
 	Orchestrator *gorchv1alpha1.GuardrailsOrchestrator

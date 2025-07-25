@@ -45,6 +45,7 @@ type NemoGuardrailsReconciler struct {
 const (
 	serviceTemplate = "service.tmpl.yaml"
 	routeTemplate   = "route.tmpl.yaml"
+	routePort       = "oauth-proxy"
 )
 
 //+kubebuilder:rbac:groups=trustyai.opendatahub.io,resources=nemoguardrails,verbs=get;list;watch;create;update;patch;delete
@@ -100,7 +101,7 @@ func (r *NemoGuardrailsReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, nemoGuardrails, routeTemplate, templateParser.ParseResource)
+	_, err = utils.ReconcileDefaultRoute(ctx, r.Client, nemoGuardrails, routeTemplate, templateParser.ParseResource)
 	if err != nil {
 		logger.Error(err, "Failed to reconcile service")
 		return ctrl.Result{}, err

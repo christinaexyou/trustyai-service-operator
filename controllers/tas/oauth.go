@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	tlsServiceTemplatePath = "templates/service/service-tls.tmpl.yaml"
+	tlsServiceTemplatePath = "service/service-tls.tmpl.yaml"
 )
 
 type OAuthConfig struct {

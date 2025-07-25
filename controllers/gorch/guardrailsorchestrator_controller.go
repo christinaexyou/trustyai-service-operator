@@ -36,9 +36,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-const serviceTemplate = "gorch/templates/service.tmpl.yaml"
-const healthRouteTemplate = "gorch/templates/health-route.tmpl.yaml"
-const httpsRouteTemplate = "gorch/templates/https-route.tmpl.yaml"
+const (
+	serviceTemplate = "service.tmpl.yaml"
+	routeTemplate   = "route.tmpl.yaml"
+	httpsRoutePort  = "https"
+	healthRoutePort = "health"
+)
 
 // GuardrailsOrchestratorReconciler reconciles a GuardrailsOrchestrator object
 type GuardrailsOrchestratorReconciler struct {
@@ -190,15 +193,16 @@ func (r *GuardrailsOrchestratorReconciler) Reconcile(ctx context.Context, req ct
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, httpsRouteTemplate, templateParser.ParseResource)
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, orchestrator.Name, httpsRoutePort, routeTemplate, templateParser.ParseResource)
 	if err != nil {
-		log.Error(err, "Failed to reconcile service")
+		log.Error(err, "Failed to reconcile https route")
 		return ctrl.Result{}, err
 	}
 
-	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, healthRouteTemplate, templateParser.ParseResource)
+	healthRouteName := orchestrator.Name + "-" + healthRoutePort
+	_, err = utils.ReconcileRoute(ctx, r.Client, orchestrator, healthRouteName, healthRoutePort, routeTemplate, templateParser.ParseResource)
 	if err != nil {
-		log.Error(err, "Failed to reconcile service")
+		log.Error(err, "Failed to reconcile health route")
 		return ctrl.Result{}, err
 	}
 

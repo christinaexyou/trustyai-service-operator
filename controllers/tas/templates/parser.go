@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-//go:embed **/*.tmpl.yaml
+//go:embed service/*.tmpl.yaml
 var templateFS embed.FS
 
 func ParseResource[T any](templatePath string, data interface{}, outType reflect.Type) (*T, error) {

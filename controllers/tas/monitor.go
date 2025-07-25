@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	centralServiceMonitorTemplatePath = "tas/templates/service/service-monitor-central.tmpl.yaml"
-	localServiceMonitorTemplatePath   = "tas/templates/service/service-monitor-local.tmpl.yaml"
+	centralServiceMonitorTemplatePath = "service/service-monitor-central.tmpl.yaml"
+	localServiceMonitorTemplatePath   = "service/service-monitor-local.tmpl.yaml"
 )
 
 type ServiceMonitorConfig struct {

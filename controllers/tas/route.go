@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	routeTemplatePath = "tas/templates/service/route.tmpl.yaml"
+	routeTemplatePath = "service/route.tmpl.yaml"
 )
 
 type RouteConfig struct {

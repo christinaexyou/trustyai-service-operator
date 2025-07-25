@@ -87,5 +87,5 @@ const migrationAnnotationKey = "trustyai.opendatahub.io/db-migration"
 
 // Templates
 const (
-	serviceTemplatePath = "tas/templates/service/service-internal.tmpl.yaml"
+	serviceTemplatePath = "service/service-internal.tmpl.yaml"
 )

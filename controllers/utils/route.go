@@ -18,15 +18,19 @@ import (
 )
 
 type RouteConfig struct {
-	Owner metav1.Object
+	Owner     metav1.Object
+	RouteName string
+	RoutePort string
 }
 
-func createRoute(ctx context.Context, c client.Client, owner metav1.Object, routeTemplatePath string, parser ResourceParserFunc[routev1.Route]) (*routev1.Route, error) {
-	routeHttpsConfig := RouteConfig{
-		Owner: owner,
+func createRoute(ctx context.Context, c client.Client, owner metav1.Object, routeName string, portName string, routeTemplatePath string, parser ResourceParserFunc[routev1.Route]) (*routev1.Route, error) {
+	routeConfig := RouteConfig{
+		Owner:     owner,
+		RouteName: routeName,
+		RoutePort: portName,
 	}
 	var route *routev1.Route
-	route, err := parser(routeTemplatePath, routeHttpsConfig, reflect.TypeOf(&routev1.Route{}))
+	route, err := parser(routeTemplatePath, routeConfig, reflect.TypeOf(&routev1.Route{}))
 
 	if err != nil {
 		log.FromContext(ctx).Error(err, "failed to parse route template")
@@ -77,22 +81,29 @@ func CheckRouteReady(ctx context.Context, c client.Client, name string, namespac
 	return true, nil
 }
 
-func ReconcileRoute(ctx context.Context, c client.Client, owner metav1.Object, templatePath string, parserFunc ResourceParserFunc[routev1.Route]) (ctrl.Result, error) {
+func ReconcileDefaultRoute(ctx context.Context, c client.Client, owner metav1.Object, templatePath string, parserFunc ResourceParserFunc[routev1.Route]) (ctrl.Result, error) {
+	return ReconcileRoute(ctx, c, owner, owner.GetName(), "", templatePath, parserFunc)
+}
+
+func ReconcileRoute(ctx context.Context, c client.Client, owner metav1.Object, routeName string, portName string, templatePath string, parserFunc ResourceParserFunc[routev1.Route]) (ctrl.Result, error) {
 	existingRoute := &routev1.Route{}
-	err := c.Get(ctx, types.NamespacedName{Name: owner.GetName(), Namespace: owner.GetNamespace()}, existingRoute)
+	err := c.Get(ctx, types.NamespacedName{Name: routeName, Namespace: owner.GetNamespace()}, existingRoute)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new route
-		route, err := createRoute(ctx, c, owner, templatePath, parserFunc)
+		log.FromContext(ctx).Info("1", "template", templatePath)
+		route, err := createRoute(ctx, c, owner, routeName, portName, templatePath, parserFunc)
 		if err != nil {
 			log.FromContext(ctx).Error(err, "Failed to define route", "route", owner.GetName(), "namespace", owner.GetNamespace())
 			return ctrl.Result{}, err
 		}
-
+		log.FromContext(ctx).Info("2", "template", templatePath)
 		log.FromContext(ctx).Info("Creating a new Route", "Route.Namespace", route.Namespace, "Route.Name", route.Name)
 		err = c.Create(ctx, route)
 		if err != nil {
 			log.FromContext(ctx).Error(err, "Failed to create new Route", "Route.Namespace", route.Namespace, "Route.Name", route.Name)
+			return ctrl.Result{}, err
 		}
+		log.FromContext(ctx).Info("3", "template", templatePath)
 	} else if err != nil {
 		log.FromContext(ctx).Error(err, "Failed to get Route")
 		return ctrl.Result{}, err

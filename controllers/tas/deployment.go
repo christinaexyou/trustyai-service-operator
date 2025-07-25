@@ -19,7 +19,7 @@ import (
 
 const (
 	defaultBatchSize       = 5000
-	deploymentTemplatePath = "tas/templates/service/deployment.tmpl.yaml"
+	deploymentTemplatePath = "service/deployment.tmpl.yaml"
 	caBundleAnnotation     = "config.openshift.io/inject-trusted-cabundle"
 	caBundleName           = "odh-trusted-ca-bundle"
 )

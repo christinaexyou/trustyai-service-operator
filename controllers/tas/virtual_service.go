@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	virtualServiceTemplatePath = "tas/templates/service/virtual-service.tmpl.yaml"
+	virtualServiceTemplatePath = "service/virtual-service.tmpl.yaml"
 	virtualServiceCDRName      = "destinationrules.networking.istio.io"
 )
 

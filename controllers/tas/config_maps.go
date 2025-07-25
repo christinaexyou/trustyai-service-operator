@@ -16,7 +16,11 @@ func (r *TrustyAIServiceReconciler) getImageFromConfigMap(ctx context.Context, k
 	if r.Namespace != "" {
 		image, err := utils.GetImageFromConfigMap(ctx, r.Client, key, constants.ConfigMap, r.Namespace)
 		if err != nil {
-			return defaultImage, err
+			if errors.IsNotFound(err) {
+				return defaultImage, nil
+			} else {
+				return defaultImage, err
+			}
 		}
 		return image, nil
 	} else {

@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	destinationRuleTemplatePath = "tas/templates/service/destination-rule.tmpl.yaml"
+	destinationRuleTemplatePath = "service/destination-rule.tmpl.yaml"
 	destinationRuleCDRName      = "destinationrules.networking.istio.io"
 )
 
