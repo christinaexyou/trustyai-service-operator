@@ -43,6 +43,20 @@ spec:
                 description: NemoConfig should be the name of the configmap containing
                   the NeMO server configuration
                 type: string
+              tracing:
+                description: List of OTEL enviroment variables for configuring the
+                  OTLP exporter
+                properties:
+                  tracesEndpoint:
+                    description: OTLP endpoint for sending traces
+                    type: string
+                  tracesInsecure:
+                    description: Insecure mode for the OTLP endpoint
+                    type: boolean
+                  tracesServiceName:
+                    description: Name of the service for tracing
+                    type: string
+                type: object
             type: object
           status:
             description: NemoGuardrailStatus defines the observed state of NemoGuardrails

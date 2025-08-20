@@ -6,4 +6,8 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: nemoguardrail-sample
 spec:
-  # TODO(user): Add fields here
+  nemoConfig: nemo-config-sample
+  # OpenTelemetry tracing configuration
+  tracing:
+    serviceName: "my-nemo-guardrails"
+    tracingEndpoint: "http://jaeger-collector.observability.svc.cluster.local:4317"

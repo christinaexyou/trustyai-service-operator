@@ -31,6 +31,21 @@ spec:
         env:
         - name: CONFIG_ID
           value: rails-custom-action
+        {{if .NemoGuardrails.Spec.OtelExporter.OTLPTracesServiceName}}
+        - name: ENABLE_OTEL
+          value: "true"
+        - name: OTEL_SERVICE_NAME
+          value: {{.NemoGuardrails.Spec.OtelExporter.OTLPTracesServiceName}}
+        - name: OTEL_ENABLE_CONSOLE
+          value: "true"
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: {{.NemoGuardrails.Spec.OtelExporter.OTLPTracesInsecure}}
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: {{.NemoGuardrails.Spec.OtelExporter.OTLPTracesEndpoint}}
+        {{else}}
+        - name: ENABLE_OTEL
+          value: "false"
+        {{end}}
         readinessProbe:
           httpGet:
             path: /

@@ -31,7 +31,21 @@ type NemoGuardrailsSpec struct {
 
 	// NemoConfig should be the name of the configmap containing the NeMO server configuration
 	NemoConfig string `json:"nemoConfig,omitempty"`
+	// List of OTEL enviroment variables for configuring the OTLP exporter
+	// +optional
+	OtelExporter OtelExporter `json:"tracing,omitempty"`
 }
+
+// OtelExporter defines the enviroment variables for configuring the OTLP exporter
+type OtelExporter struct {
+	// Name of the service for tracing
+	OTLPTracesServiceName string `json:"tracesServiceName,omitempty"`
+	// OTLP endpoint for sending traces
+	OTLPTracesEndpoint string `json:"tracesEndpoint,omitempty"`
+	// Insecure mode for the OTLP endpoint
+	OTLPTracesInsecure bool `json:"tracesInsecure,omitempty"`
+}
+
 
 // NemoGuardrailStatus defines the observed state of NemoGuardrails
 type NemoGuardrailStatus struct {
