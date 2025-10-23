@@ -33,9 +33,22 @@ type NemoGuardrailsSpec struct {
 	// NemoConfig should be the name of the configmap containing the NeMO server configuration
 	NemoConfig     string                 `json:"nemoConfig,omitempty"`
 	CABundleConfig *common.CABundleConfig `json:"caBundleConfig,omitempty"`
+	// List of enviroment variables for configuring OpenTelemetry
+	// +optional
+	OtelExporter OtelExporter `json:"otelExporter,omitempty"`
 	// Define Env information for the main container
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`
+}
+
+// OtelExporter defines the enviroment variables for configuring the OTLP exporter
+type OtelExporter struct {
+	// Name of the service for tracing
+	OTLPTracesServiceName string `json:"otlpTracesServiceName,omitempty"`
+	// OTLP endpoint for sending traces
+	OTLPTracesEndpoint string `json:"otlpTracesEndpoint,omitempty"`
+	// Insecure mode for the OTLP endpoint
+	OTLPTracesInsecure bool `json:"otlpTracesInsecure,omitempty"`
 }
 
 type CAStatus struct {
