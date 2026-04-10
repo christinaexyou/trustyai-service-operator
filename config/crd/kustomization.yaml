@@ -8,6 +8,7 @@ resources:
   - bases/trustyai.opendatahub.io_guardrailsorchestrators.yaml
   - bases/trustyai.opendatahub.io_evalhubs.yaml
   - bases/trustyai.opendatahub.io_nemoguardrails.yaml
+  - bases/trustyai.opendatahub.io_pluginsadapters.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge: []

@@ -1,0 +1,10 @@
+# do not edit: generated via hack/generate-component-kustomization.sh
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - crd/trustyai.opendatahub.io_pluginsadapters.yaml
+  - rbac/manager-rbac.yaml
+  - rbac/manager-rolebinding.yaml
+  - rbac/pluginsadapter_editor_role.yaml
+  - rbac/pluginsadapter_viewer_role.yaml

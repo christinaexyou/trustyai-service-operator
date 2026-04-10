@@ -1,0 +1,66 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  labels:
+    app.kubernetes.io/managed-by: trustyai-service-operator
+    app: {{.OwnerName}}
+    trustyai.opendatahub.io/owner-namespace: {{.OwnerNamespace}}
+spec:
+  workloadSelector:
+    labels:
+      gateway.networking.k8s.io/gateway-name: {{.GatewayName}}
+  configPatches:
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+        name: plugins_adapter_grpc
+        type: STRICT_DNS
+        connect_timeout: 5s
+        lb_policy: ROUND_ROBIN
+        typed_extension_protocol_options:
+          envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+            "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+            explicit_http_config:
+              http2_protocol_options: {}
+        load_assignment:
+          cluster_name: plugins_adapter_grpc
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: {{.ServiceAddress}}
+                    port_value: {{.GRPCPort}}
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: {{.PortNumber}}
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.ext_proc.plugins_adapter
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
+          failure_mode_allow: false
+          message_timeout: 30s
+          mutation_rules:
+            allow_all_routing: true
+          processing_mode:
+            request_header_mode: 'SEND'
+            response_header_mode: 'SEND'
+            request_body_mode: 'BUFFERED'
+            response_body_mode: 'BUFFERED'
+            request_trailer_mode: 'SKIP'
+            response_trailer_mode: 'SKIP'
+          grpc_service:
+            envoy_grpc:
+              cluster_name: plugins_adapter_grpc
