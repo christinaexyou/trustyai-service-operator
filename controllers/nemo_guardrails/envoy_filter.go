@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	nemoguardrailsv1alpha1 "github.com/trustyai-explainability/trustyai-service-operator/api/nemo_guardrails/v1alpha1"
 	templateParser "github.com/trustyai-explainability/trustyai-service-operator/controllers/nemo_guardrails/templates"
@@ -18,14 +19,17 @@ import (
 )
 
 const (
-	bbrSubFilterName        = "envoy.filters.http.ext_proc.bbr"
+	// bbrSubFilterPrefix is the stable type prefix for the BBR ext_proc HTTP
+	// filter
+	bbrSubFilterPrefix      = "envoy.filters.http.ext_proc."
 	envoyFilterTemplatePath = "envoy-filter.tmpl.yaml"
 )
 
 type EnvoyFilterConfig struct {
-	Name            string
-	TargetName      string
-	TargetNamespace string
+	Name             string
+	TargetName       string
+	TargetNamespace  string
+	BBRSubFilterName string
 }
 
 // isBBRPluginPresent lists EnvoyFilter resources in the given namespace and
@@ -66,8 +70,10 @@ func (r *NemoGuardrailsReconciler) isBBRPluginPresent(ctx context.Context, gatew
 				continue
 			}
 			name, _, _ := unstructured.NestedString(patch, "patch", "value", "name")
-			if name == bbrSubFilterName {
+			if strings.HasPrefix(name, bbrSubFilterPrefix) {
+				logger.Info("BBR ext_proc filter detected", "filterName", name)
 				bbrPluginStatus.BBRPluginFound = true
+				bbrPluginStatus.BBRPluginName = name
 				return bbrPluginStatus
 			}
 		}
@@ -99,7 +105,7 @@ func (r *NemoGuardrailsReconciler) deleteEnvoyFilter(ctx context.Context, namesp
 	return nil
 }
 
-func (r *NemoGuardrailsReconciler) ensureEnvoyFilter(ctx context.Context, instance *nemoguardrailsv1alpha1.NemoGuardrails, mcpGatewayName string, mcpGatewayNamespace string) error {
+func (r *NemoGuardrailsReconciler) ensureEnvoyFilter(ctx context.Context, instance *nemoguardrailsv1alpha1.NemoGuardrails, mcpGatewayName string, mcpGatewayNamespace string, bbrSubFilterName string) error {
 	logger := log.FromContext(ctx)
 
 	existing := &unstructured.Unstructured{}
@@ -109,9 +115,10 @@ func (r *NemoGuardrailsReconciler) ensureEnvoyFilter(ctx context.Context, instan
 	err := r.Get(ctx, types.NamespacedName{Name: envoyFilterName, Namespace: mcpGatewayNamespace}, existing)
 	if errors.IsNotFound(err) {
 		config := EnvoyFilterConfig{
-			Name:            envoyFilterName,
-			TargetName:      mcpGatewayName,
-			TargetNamespace: mcpGatewayNamespace,
+			Name:             envoyFilterName,
+			TargetName:       mcpGatewayName,
+			TargetNamespace:  mcpGatewayNamespace,
+			BBRSubFilterName: bbrSubFilterName,
 		}
 		desired, err := templateParser.ParseResource[*unstructured.Unstructured](envoyFilterTemplatePath, config, reflect.TypeOf(&unstructured.Unstructured{}))
 		if err != nil {

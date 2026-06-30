@@ -241,7 +241,7 @@ func (r *NemoGuardrailsReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 		}
 
-		if err := r.ensureEnvoyFilter(ctx, nemoGuardrails, mcpGatewayRef.Name, mcpGatewayRef.Namespace); err != nil {
+		if err := r.ensureEnvoyFilter(ctx, nemoGuardrails, mcpGatewayRef.Name, mcpGatewayRef.Namespace, bbrPluginStatus.BBRPluginName); err != nil {
 			utils.LogErrorReconciling(ctx, err, "EnvoyFilter", mcpGatewayRef.Name, mcpGatewayRef.Namespace)
 			return ctrl.Result{}, err
 		}

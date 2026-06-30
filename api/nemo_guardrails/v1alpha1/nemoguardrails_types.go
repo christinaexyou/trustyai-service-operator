@@ -108,6 +108,7 @@ type MCPGatewayStatus struct {
 
 type BBRPluginStatus struct {
 	BBRPluginFound bool   `json:"bbrPluginFound"`
+	BBRPluginName  string `json:"bbrPluginName,omitempty"`
 	BBRPluginError string `json:"bbrPluginError,omitempty"`
 }
 
